@@ -2,6 +2,7 @@ package ktb3.full.community.user.service;
 
 import ktb3.full.community.common.exception.ErrorDetail;
 import ktb3.full.community.common.exception.custom.ConflictException;
+import ktb3.full.community.common.exception.custom.ForbiddenException;
 import ktb3.full.community.common.exception.custom.NotFoundException;
 import ktb3.full.community.user.domain.User;
 import ktb3.full.community.user.dto.request.UserSignupRequest;
@@ -37,7 +38,13 @@ public class UserService {
         return UserResponse.from(userRepository.save(user));
     }
 
-    public UserResponse updateProfile(Long id, UserUpdateRequest dto) {
+    public UserResponse updateProfile(Long id, Long userId, UserUpdateRequest dto) {
+        if (!id.equals(userId)) {
+            throw new ForbiddenException(List.of(
+                    new ErrorDetail("userId", "not_user", "본인 정보만 수정할 수 있습니다.")
+            ));
+        }
+
         User user= userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(
                         List.of(new ErrorDetail("id", "user_not_found", "사용자를 찾을 수 없습니다."))
@@ -54,7 +61,12 @@ public class UserService {
         return UserResponse.from(user);
     }
 
-    public void updatePassword(Long id, UserUpdatePasswordRequest dto) {
+    public void updatePassword(Long id, Long userId, UserUpdatePasswordRequest dto) {
+        if (!id.equals(userId)) {
+            throw new ForbiddenException(List.of(
+                    new ErrorDetail("userId", "not_user", "본인 정보만 수정할 수 있습니다.")
+            ));
+        }
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(
                         List.of(new ErrorDetail("id", "user_not_found", "사용자를 찾을 수 없습니다."))
@@ -64,7 +76,12 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public void delete(Long id) {
+    public void delete(Long id, Long userId) {
+        if (!id.equals(userId)) {
+            throw new ForbiddenException(List.of(
+                    new ErrorDetail("userId", "not_user", "본인만 탈퇴가 가능합니다.")
+            ));
+        }
         userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(
                         List.of(new ErrorDetail("id", "user_not_found", "사용자를 찾을 수 없습니다."))
