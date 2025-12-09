@@ -40,4 +40,10 @@ public class InMemoryRefreshTokenRepository implements RefreshTokenRepository {
         );
     }
 
+    @Override
+    public void revokeByToken(String token) {
+
+    }
+
+
 }

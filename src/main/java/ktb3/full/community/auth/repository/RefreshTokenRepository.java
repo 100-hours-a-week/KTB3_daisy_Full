@@ -10,4 +10,5 @@ public interface RefreshTokenRepository {
     void revoke(String token);
     void delete(String token);
     void deleteByUserId(Long userId);
+    void revokeByToken(String token);
 }
