@@ -5,6 +5,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import ktb3.full.community.auth.dto.request.LoginRequest;
+import ktb3.full.community.auth.dto.response.AuthTokensResponse;
 import ktb3.full.community.auth.dto.response.TokenResponse;
 import ktb3.full.community.auth.service.AuthService;
 import ktb3.full.community.common.response.ApiResponse;
@@ -23,7 +24,7 @@ public class AuthController {
 
     @PostMapping("/token")
     public ResponseEntity<ApiResponse<TokenResponse>> login(@Valid @RequestBody LoginRequest dto) {
-        TokenResponse tokens = authService.login(dto);
+        AuthTokensResponse tokens = authService.login(dto);
         long maxAgeSec = Math.max((tokens.getRefreshTokenExpiration() - System.currentTimeMillis()) / 1000,0);
         ResponseCookie cookie = ResponseCookie.from("refreshToken", tokens.getRefreshToken())
                 .httpOnly(true)
@@ -32,9 +33,14 @@ public class AuthController {
                 .maxAge(maxAgeSec)
                 .build();
 
+        TokenResponse body = new TokenResponse(
+                tokens.getAccessToken(),
+                tokens.getAccessTokenExpiration()
+        );
+
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                .body(ApiResponse.ok("updated_success", tokens));
+                .body(ApiResponse.ok("updated_success", body));
     }
 
     @PostMapping("/revoke")
@@ -49,7 +55,7 @@ public class AuthController {
 
     @PostMapping("/refresh")
     public ResponseEntity<ApiResponse<TokenResponse>> refreshToken(@CookieValue(value = "refreshToken", required = false) String refreshToken) {
-        TokenResponse tokens = authService.refresh(refreshToken);
+        AuthTokensResponse tokens = authService.refresh(refreshToken);
         long maxAgeSec = Math.max((tokens.getRefreshTokenExpiration() - System.currentTimeMillis()) / 1000,0);
         ResponseCookie cookie = ResponseCookie.from("refreshToken", tokens.getRefreshToken())
                 .httpOnly(true)
@@ -58,8 +64,13 @@ public class AuthController {
                 .maxAge(maxAgeSec)
                 .build();
 
+        TokenResponse body = new TokenResponse(
+                tokens.getAccessToken(),
+                tokens.getAccessTokenExpiration()
+        );
+
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                .body(ApiResponse.ok("token_updated_success", tokens));
+                .body(ApiResponse.ok("token_updated_success", body));
     }
 }
