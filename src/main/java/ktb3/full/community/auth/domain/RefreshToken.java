@@ -46,4 +46,15 @@ public class RefreshToken {
     public void revoke() {
         this.revoked = true;
     }
+
+    public void rotate(String newToken, Instant newExpiresAt) {
+        this.token = newToken;
+        this.expiresAt = newExpiresAt;
+        this.revoked = false;
+    }
+
+    public void updateToken(String newToken, Instant expiresAt) {
+        this.token = newToken;
+        this.expiresAt = expiresAt;
+    }
 }
