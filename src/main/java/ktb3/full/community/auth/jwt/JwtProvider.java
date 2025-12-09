@@ -1,19 +1,22 @@
 package ktb3.full.community.auth.jwt;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import ktb3.full.community.security.CustomUserDetails;
 import ktb3.full.community.user.domain.Role;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+
 import org.springframework.stereotype.Component;
 
 
 import java.security.Key;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
 
 @Component
@@ -76,5 +79,37 @@ public class JwtProvider {
 
     public Instant getExpiration(String token) {
         return getClaims(token).getBody().getExpiration().toInstant();
+    }
+
+    public boolean validateToken(String token) {
+        try {
+            getClaims(token);
+            return true;
+        } catch (SecurityException |
+                 MalformedJwtException |
+                 ExpiredJwtException |
+                 UnsupportedJwtException |
+                 IllegalArgumentException e) {
+
+            return false;
+        }
+    }
+
+    public Authentication getAuthentication(String token) {
+        Claims claims = getClaims(token).getBody();
+        Long userId = Long.valueOf(claims.getSubject());
+        String email = claims.get("email", String.class);
+        String roleName = claims.get("role", String.class);
+
+        Role role = Role.valueOf(roleName);
+
+        CustomUserDetails principal = new CustomUserDetails(
+                userId,
+                email,
+                "",
+                role
+        );
+
+        return new UsernamePasswordAuthenticationToken(principal, token, principal.getAuthorities());
     }
 }

@@ -40,4 +40,9 @@ public class RefreshTokenRepositoryAdapter implements RefreshTokenRepository {
     public void deleteByUserId(Long userId) {
         refreshTokenJpaRepository.deleteByUserId(userId);
     }
+
+    @Override
+    public void revokeByToken(String token) {
+        refreshTokenJpaRepository.revokeByToken(token);
+    }
 }

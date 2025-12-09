@@ -10,6 +10,7 @@ import ktb3.full.community.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 
 @Configuration
@@ -18,13 +19,14 @@ public class DataSeeder implements CommandLineRunner {
     private final UserRepository userRepository;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     @Transactional
     public void run(String... args) {
         if (userRepository.count() > 0) return;
-        User user1 = new User("test1@test.com", "123456aA!", "test1", null);
-        User user2 = new User("test2@test.com", "123456bB!", "test2", null);
+        User user1 = new User("test1@test.com", passwordEncoder.encode("123456aA!"), "test1", null);
+        User user2 = new User("test2@test.com", passwordEncoder.encode("123456bB!"), "test2", null);
         userRepository.save(user1);
         userRepository.save(user2);
 

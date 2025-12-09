@@ -14,6 +14,7 @@ import ktb3.full.community.user.dto.request.UserUpdateRequest;
 import ktb3.full.community.user.dto.response.UserResponse;
 import ktb3.full.community.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -24,6 +25,7 @@ import java.util.List;
 public class UserService {
     private final UserRepository userRepository;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public UserResponse signup(UserSignupRequest dto) {
@@ -38,7 +40,8 @@ public class UserService {
         if (!errors.isEmpty()) {
             throw new ConflictException(errors);
         }
-        User user = new User(email, dto.getPassword(), dto.getNickname(), dto.getProfileImage());
+        String password = passwordEncoder.encode(dto.getPassword());
+        User user = new User(email, password, dto.getNickname(), dto.getProfileImage());
 
         return UserResponse.from(userRepository.save(user));
     }
